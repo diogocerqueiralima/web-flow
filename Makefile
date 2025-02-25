@@ -7,17 +7,17 @@ BINS = main
 
 all: $(BINS)
 
-main: main.c sockets.o errors.o threads.o
-	$(CC) $(CFLAGS) -o main main.c sockets.o errors.o threads.o
+main: src/main.c sockets.o errors.o threads.o
+	$(CC) $(CFLAGS) -o main src/main.c sockets.o errors.o threads.o
 
-sockets.o: sockets/sockets.c sockets/sockets.h errors/errors.h
-	$(CC) $(CFLAGS) -c sockets/sockets.c -o sockets.o
+sockets.o: src/sockets/sockets.c src/sockets/sockets.h src/errors/errors.h
+	$(CC) $(CFLAGS) -c src/sockets/sockets.c -o sockets.o
 
-threads.o: threads/threads.c threads/threads.h errors/errors.h
-	$(CC) $(CFLAGS) -c threads/threads.c -o threads.o
+threads.o: src/threads/threads.c src/threads/threads.h src/errors/errors.h
+	$(CC) $(CFLAGS) -c src/threads/threads.c -o threads.o
 
-errors.o: errors/errors.c errors/errors.h
-	$(CC) $(CFLAGS) -c errors/errors.c -o errors.o
+errors.o: src/errors/errors.c src/errors/errors.h
+	$(CC) $(CFLAGS) -c src/errors/errors.c -o errors.o
 
 clean:
 	$(RM) $(BINS) *.o
