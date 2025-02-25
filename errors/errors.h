@@ -14,6 +14,6 @@
 
   } Severity;
 
-  void throw_runtime_error(char *msg);
+  void throw_system_error(Severity level, char *msg);
 
 #endif
