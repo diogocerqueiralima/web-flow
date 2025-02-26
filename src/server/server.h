@@ -14,6 +14,7 @@
     int port;
     int socketFD;
     int closing;
+    int starting;
     ThreadPool *threadPool;
 
   } HttpServer;

@@ -10,6 +10,13 @@ void initialize_http_server(int port) {
     return;
   }
 
+  httpServer = malloc(sizeof(HttpServer));
+
+  if (httpServer == NULL)
+    throw_system_error(FATAL, "It was not possible initialize the http server");
+
+  httpServer->starting = 1;
+
   int socketFD = tcp_socket_server_init(port);
 
   if (socketFD < 0)
@@ -20,11 +27,7 @@ void initialize_http_server(int port) {
   if (threadPool == NULL)
     throw_system_error(FATAL, "It was not possible initialize the http server");
 
-  httpServer = malloc(sizeof(HttpServer));
-
-  if (httpServer == NULL)
-    throw_system_error(FATAL, "It was not possible initialize the http server");
-
+  httpServer->starting = 0;
   httpServer->closing = 0;
   httpServer->port = port;
   httpServer->socketFD = socketFD;
@@ -37,6 +40,11 @@ void shutdown_http_server() {
 
   if (httpServer == NULL) {
     throw_system_error(WARN, "HTTP Server is not initialized");
+    return;
+  }
+
+  if (httpServer->starting) {
+    throw_system_error(WARN, "HTTP Server is starting");
     return;
   }
 
