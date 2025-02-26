@@ -3,6 +3,7 @@
   #define SOCKETS_H 
   #define SOCKET_QUEUE 512
 
+  #include "../errors/errors.h"
   #include <sys/socket.h>
   #include <netinet/in.h>
   #include <string.h>

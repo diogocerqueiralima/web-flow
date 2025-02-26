@@ -5,6 +5,8 @@ char *get_severity_message(Severity level) {
   switch (level) {
     case INFO:
       return "INFO";
+    case WARN:
+      return "WARN";
     case CRITICAL:
       return "CRITICAL";
     case FATAL:

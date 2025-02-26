@@ -1,5 +1,4 @@
 #include "sockets.h"
-#include "../errors/errors.h"
 
 int tcp_socket_server_init(int port) {
 

@@ -1,26 +1,17 @@
-#include "sockets/sockets.h"
-#include "threads/threads.h"
+#include "server/server.h"
 #include <stdio.h>
 
 #define PORT 8080
 
 int main() {
 
-  create_thread_pool(10);
+  initialize_http_server(PORT);
+  HttpServer *httpServer = get_http_server(); 
 
-  int serverSocketFD = tcp_socket_server_init(8080); 
-  int clientSocketFD;
+  printf("Socket: %d\n", httpServer->socketFD);
 
-  while((clientSocketFD = tcp_socket_server_accept(serverSocketFD)) > 0) {
+  while (1) {
 
-    void *buffer = read_socket(clientSocketFD, 16);
-    int bytesRead = *((int *) buffer);
-    char *data = (char *) buffer + sizeof(int);
-
-    printf("Bytes read: %d\n", bytesRead);
-    printf("Received data: %.*s\n", bytesRead, data);
-
-    free(buffer);
   }
 
   return 0;

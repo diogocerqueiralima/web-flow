@@ -9,6 +9,7 @@
   typedef enum {
 
     INFO,
+    WARN,
     CRITICAL,
     FATAL
 
