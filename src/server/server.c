@@ -5,6 +5,8 @@ HttpServer *httpServer = NULL;
 
 void initialize_http_server(int port) {
 
+  signal(SIGINT, shutdown_http_server);
+
   if (httpServer != NULL) {
     throw_system_error(WARN, "HTTP Server is already initialized");
     return;
@@ -27,13 +29,12 @@ void initialize_http_server(int port) {
   if (threadPool == NULL)
     throw_system_error(FATAL, "It was not possible initialize the http server");
 
-  httpServer->starting = 0;
   httpServer->closing = 0;
   httpServer->port = port;
   httpServer->socketFD = socketFD;
   httpServer->threadPool = threadPool;
+  httpServer->starting = 0;
 
-  signal(SIGINT, shutdown_http_server);
 }
 
 void shutdown_http_server() {
