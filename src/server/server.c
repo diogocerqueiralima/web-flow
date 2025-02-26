@@ -11,7 +11,7 @@ void initialize_http_server(int port) {
   }
 
   httpServer = malloc(sizeof(HttpServer));
-
+  
   if (httpServer == NULL)
     throw_system_error(FATAL, "It was not possible initialize the http server");
 
