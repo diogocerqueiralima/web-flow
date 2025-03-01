@@ -22,5 +22,18 @@ threads.o: src/threads/threads.c src/threads/threads.h src/errors/errors.h
 errors.o: src/errors/errors.c src/errors/errors.h
 	$(CC) $(CFLAGS) -c src/errors/errors.c -o errors.o
 
+hashtable.o: src/utils/hashtable.c src/utils/hashtable.h
+	$(CC) $(CFLAGS) -c src/utils/hashtable.c -o hashtable.o
+
+the_tests: the_tests.o hashtable.o
+	$(CC) $(CFLAGS) -o the_tests tests/hashtable.c hashtable.o
+
+the_tests.o: tests/hashtable.c src/utils/hashtable.c
+	$(CC) $(CFLAGS) -c tests/hashtable.c -o the_tests.o
+
+run-tests: the_tests
+	@echo "Running tests..."
+	@valgrind ./the_tests
+
 clean:
-	$(RM) $(BINS) *.o
+	$(RM) $(BINS) *.o the_tests
