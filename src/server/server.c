@@ -1,4 +1,5 @@
 #include "server.h"
+#include "routes.h"
 #include <stdlib.h>
 
 HttpServer *httpServer = NULL;
@@ -18,6 +19,10 @@ void initialize_http_server(int port) {
     throw_system_error(FATAL, "It was not possible initialize the http server");
 
   httpServer->starting = 1;
+  httpServer->router = initialize_router(DEFAULT_ROUTER_CAPACITY);
+
+  if (httpServer->router == NULL)
+    throw_system_error(FATAL, "It was not possible initialize the http server");
 
   int socketFD = tcp_socket_server_init(port);
 
