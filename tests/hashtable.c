@@ -48,11 +48,33 @@ void get_entry_from_hash_table_should_succeed() {
   printf("✔ get entry from hash table\n");
 }
 
+void remove_entry_from_hash_table_should_succeed() {
+
+  HashTable *hashTable = initialize_hash_table(DEFAULT_HASH_TABLE_CAPACITY);
+
+  char *key = "name";
+  char *value = "Diogo";
+
+  add_hash_table_entry(hashTable, key, strlen(key), value, strlen(value));
+  int success = remove_hash_table_entry(hashTable, key, strlen(key));
+
+  assert(success == 0);
+
+  Data *data = get_hash_table_entry(hashTable, key, strlen(key));
+
+  assert(data == NULL);
+
+  destroy_hash_table(hashTable);
+
+  printf("✔ remove entry from hash table\n");
+}
+
 int main() {
 
   initialize_and_destroy_hash_table_should_succeed();
   add_entry_to_hash_table_should_succeed();
   get_entry_from_hash_table_should_succeed();
+  remove_entry_from_hash_table_should_succeed();
 
   return 0;
 }
