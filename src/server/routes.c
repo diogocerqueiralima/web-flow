@@ -39,7 +39,7 @@ int destroy_router(Router *router) {
   return 0;
 }
 
-int register_route(Router *router, char *path, HttpMethod method) {
+int register_route(Router *router, char *path, HttpMethod method, void (*handler)(Request *, Response *)) {
 
   if (router == NULL || path == NULL)
     return -1;
@@ -57,6 +57,7 @@ int register_route(Router *router, char *path, HttpMethod method) {
   }
 
   route->method = method;
+  route->handler = handler;
 
   if (router->size >= router->capacity) {
 

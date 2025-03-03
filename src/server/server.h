@@ -22,6 +22,7 @@
   } HttpServer;
 
   void initialize_http_server(int port);
+  void start_server();
   void shutdown_http_server();
   HttpServer *get_http_server();
 

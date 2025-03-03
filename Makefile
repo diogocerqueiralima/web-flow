@@ -7,8 +7,11 @@ BINS = main
 
 all: $(BINS)
 
-main: src/main.c server.o sockets.o threads.o errors.o
-	$(CC) $(CFLAGS) -o main src/main.c server.o sockets.o threads.o errors.o
+main: src/main.c server.o sockets.o threads.o errors.o routes.o
+	$(CC) $(CFLAGS) -o main src/main.c server.o sockets.o threads.o errors.o routes.o
+
+routes.o: src/server/routes.c src/server/routes.h src/utils/hashtable.h
+	$(CC) $(CFLAGS) -c src/server/routes.c -o routes.o
 
 server.o: src/server/server.c src/server/server.h src/sockets/sockets.h src/errors/errors.h src/threads/threads.h 
 	$(CC) $(CFLAGS) -c src/server/server.c -o server.o
