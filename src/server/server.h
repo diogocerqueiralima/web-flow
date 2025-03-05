@@ -13,11 +13,11 @@
   typedef struct {
 
     int port;
-    int socketFD;
+    int socket_fd;
     int closing;
     int starting;
     Router *router;
-    ThreadPool *threadPool;
+    ThreadPool *thread_pool;
 
   } HttpServer;
 

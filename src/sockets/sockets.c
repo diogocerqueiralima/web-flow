@@ -1,10 +1,11 @@
 #include "sockets.h"
+#include "../errors/errors.h"
 
 int tcp_socket_server_init(int port) {
 
-    int serverSocketFD = socket(AF_INET, SOCK_STREAM, 0);
+    int server_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 
-    if (serverSocketFD < 0) {
+    if (server_socket_fd < 0) {
       throw_system_error(CRITICAL, "It was not possible open a TCP Socket");
       return -1; 
     }
@@ -15,90 +16,90 @@ int tcp_socket_server_init(int port) {
     server_addr.sin_port = htons(port);
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    if ((bind(serverSocketFD, (struct sockaddr *) &server_addr, sizeof(server_addr))) < 0) {
+    if ((bind(server_socket_fd, (struct sockaddr *) &server_addr, sizeof(server_addr))) < 0) {
       throw_system_error(CRITICAL, "It was not possible assign a IP Address for the socket");
       return -1;
     }
 
-    if ((listen(serverSocketFD, SOCKET_QUEUE)) < 0) {
+    if ((listen(server_socket_fd, SOCKET_QUEUE)) < 0) {
       throw_system_error(CRITICAL, "Socket can't listen on this port");
       return -1; 
     }
 
-    return serverSocketFD;
+    return server_socket_fd;
 }
 
-int tcp_socket_server_accept(int serverSocketFD) {
+int tcp_socket_server_accept(int server_socket_fd) {
 
   struct sockaddr client_addr;
   __u_int dim_client = sizeof(client_addr); 
-  int clientSocketFD = accept(serverSocketFD, &client_addr, &dim_client);
+  int client_socket_fd = accept(server_socket_fd, &client_addr, &dim_client);
 
-  if (clientSocketFD < 0) {
+  if (client_socket_fd < 0) {
     throw_system_error(CRITICAL, "It was not possible to accept a connection to this socket");
     return -1;
   }
 
-  return clientSocketFD;
+  return client_socket_fd;
 }
 
-int write_socket(int socketFD, void *buffer, size_t count) {
+int write_socket(int socket_fd, void *buffer, size_t count) {
  
-  char *theBuffer = buffer;
-  size_t bytesToWrite = count;
+  char *the_buffer = buffer;
+  size_t bytes_to_write = count;
 
-  while (bytesToWrite > 0) {
+  while (bytes_to_write > 0) {
     
-    int bytesWritten = write(socketFD, theBuffer, bytesToWrite);
+    int bytes_written = write(socket_fd, the_buffer, bytes_to_write);
 
-    if (bytesWritten < 0) {
+    if (bytes_written < 0) {
       throw_system_error(CRITICAL, "It was not possible write to socket");
       return -1;
     }
 
-    bytesToWrite -= bytesWritten;
-    theBuffer += bytesWritten;
+    bytes_to_write -= bytes_written;
+    the_buffer += bytes_written;
   }
 
   return 0;
 }
 
-void *read_socket(int socketFD, size_t bufferSize) {
+void *read_socket(int socket_fd, size_t buffer_size) {
 
-  size_t currentBufferSize = bufferSize;
-  char *buffer = malloc(bufferSize + sizeof(int));
+  size_t current_buffer_size = buffer_size;
+  char *buffer = malloc(buffer_size + sizeof(int));
 
   if (buffer == NULL) {
     throw_system_error(CRITICAL, "It was not possible allocate memory");
     return NULL;
   }
 
-  int *totalBytesRead = (int *) buffer;
-  *totalBytesRead = 0;
-  int bytesRead;
+  int *total_bytes_read = (int *) buffer;
+  *total_bytes_read = 0;
+  int bytes_read;
 
-  while ((bytesRead = read(socketFD, buffer + sizeof(int) + *totalBytesRead, bufferSize)) > 0) {
+  while ((bytes_read = read(socket_fd, buffer + sizeof(int) + *total_bytes_read, buffer_size)) > 0) {
 
-    *totalBytesRead += bytesRead;
+    *total_bytes_read += bytes_read;
 
-    if (currentBufferSize < *totalBytesRead + bufferSize) {
+    if (current_buffer_size < *total_bytes_read + buffer_size) {
 
-      currentBufferSize *= 2;
-      currentBufferSize += sizeof(int);
-      char *newBuffer = realloc(buffer, currentBufferSize);
+      current_buffer_size *= 2;
+      current_buffer_size += sizeof(int);
+      char *new_buffer = realloc(buffer, current_buffer_size);
 
-      if (newBuffer == NULL) {
+      if (new_buffer == NULL) {
         throw_system_error(CRITICAL, "It was not possible allocate memory");
         free(buffer);
         return NULL;
       }
     
-      buffer = newBuffer;
+      buffer = new_buffer;
     }
 
   }
 
-  if (bytesRead < 0) {
+  if (bytes_read < 0) {
     throw_system_error(CRITICAL, "It was not possible read from the socket");
     free(buffer);
     return NULL;

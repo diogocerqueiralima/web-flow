@@ -30,11 +30,11 @@
   } HashTable; 
 
   HashTable *initialize_hash_table(int capacity);
-  void destroy_hash_table(HashTable *hashTable);
-  int expand_hash_table(HashTable *hashTable);
-  int add_hash_table_entry(HashTable *hashTable, void *key, size_t keySize, void *value, size_t valueSize);
-  int remove_hash_table_entry(HashTable *hashTable, void *key, size_t keySize);
-  int set_hash_table_entry(HashTable *hashTable, Entry *entry);
-  Data *get_hash_table_entry(HashTable *hashTable, void *key, size_t keySize);
+  void destroy_hash_table(HashTable *hash_table);
+  int expand_hash_table(HashTable *hash_table);
+  int add_hash_table_entry(HashTable *hash_table, void *key, size_t key_size, void *value, size_t value_size);
+  int remove_hash_table_entry(HashTable *hash_table, void *key, size_t key_size);
+  int set_hash_table_entry(HashTable *hash_table, Entry *entry);
+  Data *get_hash_table_entry(HashTable *hash_table, void *key, size_t key_size);
 
 #endif

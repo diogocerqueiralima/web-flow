@@ -3,22 +3,8 @@
   #define ROUTES_H
   #define DEFAULT_ROUTER_CAPACITY 16
 
-  #include "http.h"
-  #include "../utils/hashtable.h"
+  #include "http.h" 
   #include <stdlib.h>
-
-  typedef struct {
-
-    char *uri;
-    HashTable *path;
-    HashTable *query;
-    HashTable *body;
-
-  } Request;
-
-  typedef struct {
-
-  } Response;
 
   typedef struct {
 

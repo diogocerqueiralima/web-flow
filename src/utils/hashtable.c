@@ -12,12 +12,12 @@ int calc_hash(void *k, int size) {
   return result;
 }
 
-int equals(void *k1, int k1Size, void *k2, int k2Size) {
+int equals(void *k1, int k1_size, void *k2, int k2_size) {
 
-  if (k1Size != k2Size)
+  if (k1_size != k2_size)
     return 0;
 
-  return memcmp(k1, k2, k1Size) == 0;
+  return memcmp(k1, k2, k1_size) == 0;
 }
 
 Data *initialize_data(void *value, size_t size) {
@@ -45,33 +45,33 @@ HashTable *initialize_hash_table(int capacity) {
   if (capacity <= 0)
     return NULL;
 
-  HashTable *hashTable = malloc(sizeof(HashTable));
+  HashTable *hash_table = malloc(sizeof(HashTable));
 
-  if (hashTable == NULL)
+  if (hash_table == NULL)
     return NULL;
 
   Entry **buckets = calloc(capacity, sizeof(Entry *));
 
   if (buckets == NULL) {
-    free(hashTable);
+    free(hash_table);
     return NULL;
   }
 
-  hashTable->buckets = buckets;
-  hashTable->capacity = capacity;
-  hashTable->size = 0;
+  hash_table->buckets = buckets;
+  hash_table->capacity = capacity;
+  hash_table->size = 0;
 
-  return hashTable;
+  return hash_table;
 }
 
-void destroy_hash_table(HashTable *hashTable) {
+void destroy_hash_table(HashTable *hash_table) {
 
-  if (hashTable == NULL)
+  if (hash_table == NULL)
     return;
 
-  for (int i = 0; i < hashTable->capacity; i++) {
+  for (int i = 0; i < hash_table->capacity; i++) {
 
-    Entry *entry = hashTable->buckets[i];
+    Entry *entry = hash_table->buckets[i];
 
     while(entry != NULL) {
 
@@ -88,63 +88,63 @@ void destroy_hash_table(HashTable *hashTable) {
 
   }
 
-  free(hashTable->buckets);
-  free(hashTable);
+  free(hash_table->buckets);
+  free(hash_table);
 }
 
-int expand_hash_table(HashTable *hashTable) {
+int expand_hash_table(HashTable *hash_table) {
 
-  if (hashTable == NULL)
+  if (hash_table == NULL)
     return -1;
 
-  Entry **buckets = calloc(hashTable->capacity * 2, sizeof(Entry *));
+  Entry **buckets = calloc(hash_table->capacity * 2, sizeof(Entry *));
 
   if (buckets == NULL)
     return -1;
 
-  int oldCapacity = hashTable->capacity;
-  Entry **oldBuckets = hashTable->buckets;
-  hashTable->capacity *= 2;
-  hashTable->buckets = buckets;
+  int old_capacity = hash_table->capacity;
+  Entry **old_buckets = hash_table->buckets;
+  hash_table->capacity *= 2;
+  hash_table->buckets = buckets;
 
-  for (int i = 0; i < oldCapacity; i++) {
+  for (int i = 0; i < old_capacity; i++) {
 
-    Entry *entry = oldBuckets[i];
+    Entry *entry = old_buckets[i];
 
     while (entry != NULL) {
 
       Entry *next = entry->next;
       entry->next = NULL;
 
-      set_hash_table_entry(hashTable, entry); 
+      set_hash_table_entry(hash_table, entry); 
 
       entry = next;
     }
 
   }
 
-  free(oldBuckets);
+  free(old_buckets);
   return 0;
 }
 
-int remove_hash_table_entry(HashTable *hashTable, void *key, size_t keySize) {
+int remove_hash_table_entry(HashTable *hash_table, void *key, size_t key_size) {
 
-  if (hashTable == NULL || key == NULL)
+  if (hash_table == NULL || key == NULL || key_size <= 0)
     return -1;
 
-  int hash = calc_hash(key, keySize);
-  int index = hash % hashTable->capacity;
-  Entry *oldEntry = NULL;
-  Entry *entry = hashTable->buckets[index];
+  int hash = calc_hash(key, key_size);
+  int index = hash % hash_table->capacity;
+  Entry *old_entry = NULL;
+  Entry *entry = hash_table->buckets[index];
 
   while (entry != NULL) {
     
-    if (equals(key, keySize, entry->key->value, entry->key->size)) {
+    if (equals(key, key_size, entry->key->value, entry->key->size)) {
 
-      if (oldEntry == NULL) {
-        hashTable->buckets[index] = entry->next;
+      if (old_entry == NULL) {
+        hash_table->buckets[index] = entry->next;
       }else {
-        oldEntry->next = entry->next;
+        old_entry->next = entry->next;
       }
 
       free(entry->key->value);
@@ -152,20 +152,20 @@ int remove_hash_table_entry(HashTable *hashTable, void *key, size_t keySize) {
       free(entry->value->value);
       free(entry->value);
       free(entry);
-      hashTable->size--;
+      hash_table->size--;
       return 0;
     }
 
-    oldEntry = entry;
+    old_entry = entry;
     entry = entry->next;
   }
 
   return -1;
 }
 
-int add_hash_table_entry(HashTable *hashTable, void *key, size_t keySize, void *value, size_t valueSize) {
+int add_hash_table_entry(HashTable *hash_table, void *key, size_t key_size, void *value, size_t value_size) {
 
-  if (hashTable == NULL || key == NULL || value == NULL)
+  if (hash_table == NULL || key == NULL || value == NULL || key_size <= 0 || value_size <= 0)
     return -1;
 
   Entry *entry = malloc(sizeof(Entry));
@@ -173,70 +173,70 @@ int add_hash_table_entry(HashTable *hashTable, void *key, size_t keySize, void *
   if (entry == NULL)
     return -1;
 
-  Data *keyData = initialize_data(key, keySize);
+  Data *key_data = initialize_data(key, key_size);
 
-  if (keyData == NULL) {
+  if (key_data == NULL) {
     free(entry);
     return -1;
   }
 
-  Data *valueData = initialize_data(value, valueSize);
+  Data *value_data = initialize_data(value, value_size);
 
-  if (valueData == NULL) {
-    free(keyData);
+  if (value_data == NULL) {
+    free(key_data);
     free(entry);
     return -1;
   }
 
-  entry->key = keyData;
-  entry->value = valueData;
+  entry->key = key_data;
+  entry->value = value_data;
   entry->next = NULL;
 
-  set_hash_table_entry(hashTable, entry);
+  set_hash_table_entry(hash_table, entry);
 
   return 0;
 }
 
-int set_hash_table_entry(HashTable *hashTable, Entry *entry) {
+int set_hash_table_entry(HashTable *hash_table, Entry *entry) {
 
-  if (hashTable == NULL || entry == NULL)
+  if (hash_table == NULL || entry == NULL)
     return -1;
 
-  if (hashTable->size >= hashTable->capacity)
-    expand_hash_table(hashTable);
+  if (hash_table->size >= hash_table->capacity)
+    expand_hash_table(hash_table);
 
   int hash = calc_hash(entry->key->value, entry->key->size);
-  int index = hash % hashTable->capacity;
+  int index = hash % hash_table->capacity;
 
-  Entry *entryInBucket = hashTable->buckets[index];
+  Entry *entry_in_bucket = hash_table->buckets[index];
 
-  if (entryInBucket == NULL) {
-    hashTable->buckets[index] = entry;
+  if (entry_in_bucket == NULL) {
+    hash_table->buckets[index] = entry;
   }else {
 
-    while (entryInBucket->next != NULL) {
-      entryInBucket = entryInBucket->next;
+    while (entry_in_bucket->next != NULL) {
+      entry_in_bucket = entry_in_bucket->next;
     }
 
-    entryInBucket->next = entry;
+    entry_in_bucket->next = entry;
   }
 
-  hashTable->size++;
+  hash_table->size++;
   return 0;
 }
 
-Data *get_hash_table_entry(HashTable *hashTable, void *key, size_t keySize) {
+Data *get_hash_table_entry(HashTable *hash_table, void *key, size_t key_size) {
 
-  if (hashTable == NULL || key == NULL)
+  if (hash_table == NULL || key == NULL || key_size <= 0)
     return NULL;
 
-  int hash = calc_hash(key, keySize);
-  int index = hash % hashTable->capacity;
+  int hash = calc_hash(key, key_size);
+  int index = hash % hash_table->capacity;
 
-  Entry *entry = hashTable->buckets[index];
+  Entry *entry = hash_table->buckets[index];
 
   while (entry != NULL) {
-    if (equals(key, keySize, entry->key->value, entry->key->size)) {
+    if (equals(key, key_size, entry->key->value, entry->key->size)) {
       return entry->value;
     }
   }

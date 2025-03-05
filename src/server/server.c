@@ -1,50 +1,57 @@
 #include "server.h"
 #include "routes.h"
+#include "http.h"
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
-HttpServer *httpServer = NULL;
+HttpServer *http_server = NULL;
 
 void handle_request(void **args) {
 
-  int *clientSocketFD = (int *) args[0];
+  int *client_socket_fd = (int *) args[0];
+  char *content = read_socket(*client_socket_fd, 1024);
+  int n_bytes = *(int *) content;
+  char *data = content + sizeof(int);
+  char *request_str = strndup(data, n_bytes);
 
-  write(*clientSocketFD, "Bye!\n", 5);
-  close(*clientSocketFD);
+  initialize_request(request_str);
 
-  free(clientSocketFD);
+  free(request_str);
+  free(content);
+  free(client_socket_fd);
   free(args);
 }
 
 void handle_client() {
 
-  ThreadPool *threadPool = httpServer->threadPool;
+  ThreadPool *thread_pool = http_server->thread_pool;
 
-  int clientSocketFD = tcp_socket_server_accept(httpServer->socketFD);
+  int client_socket_fd = tcp_socket_server_accept(http_server->socket_fd);
   int *arg0 = malloc(sizeof(int));
 
   if (arg0 == NULL) {
-    close(clientSocketFD);
+    close(client_socket_fd);
     throw_system_error(CRITICAL, "It was not possible communicate with client");
     return;
   }
 
-  *arg0 = clientSocketFD;
+  *arg0 = client_socket_fd;
   void **args = malloc(sizeof(void *));
 
   if (args == NULL) {
     free(arg0);
-    close(clientSocketFD);
+    close(client_socket_fd);
     throw_system_error(CRITICAL, "It was not possible communicate with client");
     return;
   }
 
   args[0] = arg0;
 
-  if (submit_task(threadPool, &handle_request, args) != 0) {
+  if (submit_task(thread_pool, &handle_request, args) != 0) {
     free(arg0);
     free(args);
-    close(clientSocketFD);
+    close(client_socket_fd);
     throw_system_error(CRITICAL, "It was not possible communicate with client");
   }
 
@@ -54,49 +61,49 @@ void initialize_http_server(int port) {
 
   signal(SIGINT, shutdown_http_server);
 
-  if (httpServer != NULL) {
+  if (http_server != NULL) {
     throw_system_error(WARN, "HTTP Server is already initialized");
     return;
   }
 
-  httpServer = malloc(sizeof(HttpServer));
+  http_server = malloc(sizeof(HttpServer));
   
-  if (httpServer == NULL)
+  if (http_server == NULL)
     throw_system_error(FATAL, "It was not possible initialize the http server");
 
-  httpServer->starting = 1;
-  httpServer->router = initialize_router(DEFAULT_ROUTER_CAPACITY);
+  http_server->starting = 1;
+  http_server->router = initialize_router(DEFAULT_ROUTER_CAPACITY);
 
-  if (httpServer->router == NULL)
+  if (http_server->router == NULL)
     throw_system_error(FATAL, "It was not possible initialize the http server");
 
-  int socketFD = tcp_socket_server_init(port);
+  int socket_fd = tcp_socket_server_init(port);
 
-  if (socketFD < 0) {
-    destroy_router(httpServer->router);
-    free(httpServer);
-    throw_system_error(FATAL, "It was not possible initialize the http server");
-  }
-
-  ThreadPool *threadPool = create_thread_pool(DEFAULT_THREAD_POOL_SIZE);
-
-  if (threadPool == NULL) {
-    destroy_router(httpServer->router);
-    free(httpServer);
+  if (socket_fd < 0) {
+    destroy_router(http_server->router);
+    free(http_server);
     throw_system_error(FATAL, "It was not possible initialize the http server");
   }
 
-  httpServer->closing = 0;
-  httpServer->port = port;
-  httpServer->socketFD = socketFD;
-  httpServer->threadPool = threadPool;
-  httpServer->starting = 0;
+  ThreadPool *thread_pool = create_thread_pool(DEFAULT_THREAD_POOL_SIZE);
+
+  if (thread_pool == NULL) {
+    destroy_router(http_server->router);
+    free(http_server);
+    throw_system_error(FATAL, "It was not possible initialize the http server");
+  }
+
+  http_server->closing = 0;
+  http_server->port = port;
+  http_server->socket_fd = socket_fd;
+  http_server->thread_pool = thread_pool;
+  http_server->starting = 0;
 
 }
 
 void start_server() {
 
-  if (httpServer == NULL) {
+  if (http_server == NULL) {
     throw_system_error(WARN, "HTTP Server is not initialized");
     return;
   }
@@ -111,37 +118,37 @@ void start_server() {
 
 void shutdown_http_server() {
 
-  if (httpServer == NULL) {
+  if (http_server == NULL) {
     throw_system_error(WARN, "HTTP Server is not initialized");
     return;
   }
 
-  if (httpServer->starting) {
+  if (http_server->starting) {
     throw_system_error(WARN, "HTTP Server is starting");
     return;
   }
 
-  if (httpServer->closing) {
+  if (http_server->closing) {
     throw_system_error(WARN, "HTTP Server is already closing");
     return;
   }
   
-  httpServer->closing = 1;
+  http_server->closing = 1;
   
-  if (destroy_router(httpServer->router) != 0)
+  if (destroy_router(http_server->router) != 0)
     throw_system_error(CRITICAL, "It was not possible destroy the router");
 
-  shutdown_thread_pool(httpServer->threadPool);
-  close(httpServer->socketFD);
-  free(httpServer);
+  shutdown_thread_pool(http_server->thread_pool);
+  close(http_server->socket_fd);
+  free(http_server);
   throw_system_error(INFO, "HTTP Server closed");
   exit(EXIT_SUCCESS);
 }
 
 HttpServer *get_http_server() {
   
-  if (httpServer == NULL)
+  if (http_server == NULL)
     throw_system_error(FATAL, "HTTP Server is not initialized");
 
-  return httpServer;
+  return http_server;
 }

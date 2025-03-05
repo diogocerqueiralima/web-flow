@@ -28,10 +28,10 @@
 
   } ThreadPool; 
 
-  int create_thread(ThreadPool *threadPool, pthread_t *threadId);
+  int create_thread(ThreadPool *thread_pool, pthread_t *thread_id);
   ThreadPool *create_thread_pool(int size);
-  int submit_task(ThreadPool *threadPool, void (*function)(void **args), void **args);
-  Task *get_task(ThreadPool *threadPool);
-  void shutdown_thread_pool(ThreadPool *threadPool);
+  int submit_task(ThreadPool *thread_pool, void (*function)(void **args), void **args);
+  Task *get_task(ThreadPool *thread_pool);
+  void shutdown_thread_pool(ThreadPool *thread_pool);
 
 #endif
