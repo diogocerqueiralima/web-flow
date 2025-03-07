@@ -1,5 +1,4 @@
 #include "http.h"
-#include "../errors/errors.h"
 
 HttpMethod get_http_method(char *method_str) {
 
@@ -42,25 +41,60 @@ Request *initialize_request(char *request_str) {
     return NULL;
   }
 
-  HttpMethod method = get_http_method(strtok(request_str, SP));
-  
-  if (method == UNKNOWN) {
+  HashTable *headers = initialize_hash_table(DEFAULT_HASH_TABLE_CAPACITY);
+
+  if (headers == NULL) {
     free(request);
+    throw_system_error(CRITICAL, "It was not possible parse the HTTP Request");
     return NULL;
   }
 
-  char *path = strtok(NULL, SP);
-  char *version = strtok(NULL, CRLF);
+  request->headers = headers;
+  char *request_str_copy = strdup(request_str);
+
+  char *line_ptr;
+  HttpMethod method = get_http_method(strtok_r(request_str_copy, SP, &line_ptr));
+  
+  if (method == UNKNOWN) {
+    free(request_str_copy);
+    destroy_hash_table(request->headers);
+    free(request);
+    throw_system_error(CRITICAL, "It was not possible parse the HTTP Request");
+    return NULL;
+  }
+
+  char *path = strtok_r(NULL, SP, &line_ptr);
+  char *version = strtok_r(NULL, CRLF, &line_ptr);
 
   //check if version is valid
   
   request->method = method;
-  request->path = path;
-  request->version = version;
+  request->path = strdup(path);
+  request->version = strdup(version);
 
-  printf("%s\n", get_http_method_str(method));
-  printf("%s\n", path);
-  printf("%s\n", version);
+  char *line = strtok_r(NULL, CRLF, &line_ptr); 
 
+  while (line != NULL && strlen(line) > 0) {
+  
+    char *header_ptr;
+    char *headerName = strdup(strtok_r(line, ": ", &header_ptr));
+    char *headerValue = strdup(header_ptr);
+
+    printf("%s, %s\n", headerName, headerValue);
+
+    if (add_hash_table_entry(request->headers, headerName, strlen(headerName), headerValue, strlen(headerValue)) != 0) {
+      free(request_str_copy);
+      destroy_hash_table(request->headers);
+      free(request);
+      throw_system_error(CRITICAL, "Error parsing headers");
+      return NULL;
+    }
+
+    line = strtok_r(NULL, CRLF, &line_ptr);
+    printf("%s\n", line);
+  }
+
+  free(request_str_copy);
+  printf("returning...\n");
   return request;
 }

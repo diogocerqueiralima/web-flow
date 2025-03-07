@@ -7,6 +7,8 @@
   #define CRLF "\r\n"
 
   #include <string.h>
+  #include <stdlib.h>
+  #include "../errors/errors.h"
   #include "../utils/hashtable.h"
 
   typedef enum {
@@ -28,6 +30,7 @@
     HashTable *path_data;
     HashTable *query;
     HashTable *body;
+    HashTable *headers;
 
   } Request;
 

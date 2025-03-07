@@ -192,9 +192,7 @@ int add_hash_table_entry(HashTable *hash_table, void *key, size_t key_size, void
   entry->value = value_data;
   entry->next = NULL;
 
-  set_hash_table_entry(hash_table, entry);
-
-  return 0;
+  return set_hash_table_entry(hash_table, entry);
 }
 
 int set_hash_table_entry(HashTable *hash_table, Entry *entry) {
