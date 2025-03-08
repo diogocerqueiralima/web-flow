@@ -1,18 +1,19 @@
 #include "hashtable.h"
+#include <stdio.h>
 
-int calc_hash(void *k, int size) {
+unsigned long calc_hash(void *k, unsigned long size) {
 
   unsigned char *bytes = (unsigned char *) k;
-  unsigned int result = 1;
+  unsigned long result = 1;
 
   for (int i = 0; i < size; i++) {
-    result = 31 * result + bytes[i];
+    result = 31 * result + (char) bytes[i];
   }
 
   return result;
 }
 
-int equals(void *k1, int k1_size, void *k2, int k2_size) {
+int equals(void *k1, unsigned long k1_size, void *k2, unsigned long k2_size) {
 
   if (k1_size != k2_size)
     return 0;
@@ -20,7 +21,7 @@ int equals(void *k1, int k1_size, void *k2, int k2_size) {
   return memcmp(k1, k2, k1_size) == 0;
 }
 
-Data *initialize_data(void *value, size_t size) {
+Data *initialize_data(void *value, unsigned long size) {
 
   Data *data = malloc(sizeof(Data));
 
@@ -114,7 +115,6 @@ int expand_hash_table(HashTable *hash_table) {
     while (entry != NULL) {
 
       Entry *next = entry->next;
-      entry->next = NULL;
 
       set_hash_table_entry(hash_table, entry); 
 
@@ -127,12 +127,12 @@ int expand_hash_table(HashTable *hash_table) {
   return 0;
 }
 
-int remove_hash_table_entry(HashTable *hash_table, void *key, size_t key_size) {
+int remove_hash_table_entry(HashTable *hash_table, void *key, unsigned long key_size) {
 
   if (hash_table == NULL || key == NULL || key_size <= 0)
     return -1;
 
-  int hash = calc_hash(key, key_size);
+  unsigned long hash = calc_hash(key, key_size);
   int index = hash % hash_table->capacity;
   Entry *old_entry = NULL;
   Entry *entry = hash_table->buckets[index];
@@ -163,7 +163,7 @@ int remove_hash_table_entry(HashTable *hash_table, void *key, size_t key_size) {
   return -1;
 }
 
-int add_hash_table_entry(HashTable *hash_table, void *key, size_t key_size, void *value, size_t value_size) {
+int add_hash_table_entry(HashTable *hash_table, void *key, unsigned long key_size, void *value, unsigned long value_size) {
 
   if (hash_table == NULL || key == NULL || value == NULL || key_size <= 0 || value_size <= 0)
     return -1;
@@ -190,12 +190,13 @@ int add_hash_table_entry(HashTable *hash_table, void *key, size_t key_size, void
 
   entry->key = key_data;
   entry->value = value_data;
-  entry->next = NULL;
 
   return set_hash_table_entry(hash_table, entry);
 }
 
 int set_hash_table_entry(HashTable *hash_table, Entry *entry) {
+
+  entry->next = NULL;
 
   if (hash_table == NULL || entry == NULL)
     return -1;
@@ -203,7 +204,7 @@ int set_hash_table_entry(HashTable *hash_table, Entry *entry) {
   if (hash_table->size >= hash_table->capacity)
     expand_hash_table(hash_table);
 
-  int hash = calc_hash(entry->key->value, entry->key->size);
+  unsigned long hash = calc_hash(entry->key->value, entry->key->size);
   int index = hash % hash_table->capacity;
 
   Entry *entry_in_bucket = hash_table->buckets[index];
@@ -223,12 +224,12 @@ int set_hash_table_entry(HashTable *hash_table, Entry *entry) {
   return 0;
 }
 
-Data *get_hash_table_entry(HashTable *hash_table, void *key, size_t key_size) {
+Data *get_hash_table_entry(HashTable *hash_table, void *key, unsigned long key_size) {
 
   if (hash_table == NULL || key == NULL || key_size <= 0)
     return NULL;
 
-  int hash = calc_hash(key, key_size);
+  unsigned long hash = calc_hash(key, key_size);
   int index = hash % hash_table->capacity;
 
   Entry *entry = hash_table->buckets[index];

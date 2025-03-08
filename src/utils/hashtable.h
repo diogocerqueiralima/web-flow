@@ -9,7 +9,7 @@
   typedef struct {
 
     void *value;
-    size_t size;
+    unsigned long size;
 
   } Data;
 
@@ -32,9 +32,9 @@
   HashTable *initialize_hash_table(int capacity);
   void destroy_hash_table(HashTable *hash_table);
   int expand_hash_table(HashTable *hash_table);
-  int add_hash_table_entry(HashTable *hash_table, void *key, size_t key_size, void *value, size_t value_size);
-  int remove_hash_table_entry(HashTable *hash_table, void *key, size_t key_size);
+  int add_hash_table_entry(HashTable *hash_table, void *key, unsigned long key_size, void *value, unsigned long value_size);
+  int remove_hash_table_entry(HashTable *hash_table, void *key, unsigned long key_size);
   int set_hash_table_entry(HashTable *hash_table, Entry *entry);
-  Data *get_hash_table_entry(HashTable *hash_table, void *key, size_t key_size);
+  Data *get_hash_table_entry(HashTable *hash_table, void *key, unsigned long key_size);
 
 #endif
