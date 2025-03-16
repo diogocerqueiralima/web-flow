@@ -1,4 +1,5 @@
 #include "http.h"
+#include <string.h>
 
 HttpMethod get_http_method(char *method_str) {
 
@@ -32,7 +33,25 @@ char *get_http_method_str(HttpMethod method) {
   
 }
 
+void print_characters(const char *str) {
+    while (*str) {
+        if (*str == '\r') {
+            printf("\\r");
+        } else if (*str == '\n') {
+            printf("\\n");
+        } else if (*str == '\t') {
+            printf("\\t");
+        } else {
+            printf("%c", *str);
+        }
+        str++;
+    }
+    printf("\n");
+}
+
 Request *initialize_request(char *request_str) {
+
+  printf("%s\n", request_str);
 
   Request *request = malloc(sizeof(Request));
 
@@ -50,13 +69,12 @@ Request *initialize_request(char *request_str) {
   }
 
   request->headers = headers;
-  char *request_str_copy = strdup(request_str);
 
   char *line_ptr;
-  HttpMethod method = get_http_method(strtok_r(request_str_copy, SP, &line_ptr));
+  HttpMethod method = get_http_method(strtok_r(request_str, SP, &line_ptr));
   
   if (method == UNKNOWN) {
-    free(request_str_copy);
+    free(request_str);
     destroy_hash_table(request->headers);
     free(request);
     throw_system_error(CRITICAL, "It was not possible parse the HTTP Request");
@@ -69,32 +87,34 @@ Request *initialize_request(char *request_str) {
   //check if version is valid
   
   request->method = method;
-  request->path = strdup(path);
-  request->version = strdup(version);
+  request->path = path;
+  request->version = version;
 
-  char *line = strtok_r(NULL, CRLF, &line_ptr); 
+  char *line; 
 
-  while (line != NULL && strlen(line) > 0) {
-  
+  while ((line = strtok_r(NULL, CRLF, &line_ptr)) != NULL) { 
+
     char *header_ptr;
-    char *headerName = strdup(strtok_r(line, ": ", &header_ptr));
-    char *headerValue = strdup(header_ptr);
+    char *headerName = strtok_r(line, ":", &header_ptr);
 
-    printf("%s, %s\n", headerName, headerValue);
+    if (header_ptr != NULL) {
+        while (*header_ptr == ' ') header_ptr++;
+    }
+
+    char *headerValue = header_ptr;
 
     if (add_hash_table_entry(request->headers, headerName, strlen(headerName), headerValue, strlen(headerValue)) != 0) {
-      free(request_str_copy);
       destroy_hash_table(request->headers);
       free(request);
       throw_system_error(CRITICAL, "Error parsing headers");
       return NULL;
     }
 
-    line = strtok_r(NULL, CRLF, &line_ptr);
-    printf("%s\n", line);
+    char *n1 = headerValue + strlen(headerValue) + 2;
+    if (*n1 == '\r') break; 
   }
 
-  free(request_str_copy);
-  printf("returning...\n");
+  char *body = strtok_r(NULL, CRLF, &line_ptr);
+
   return request;
 }
