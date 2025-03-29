@@ -1,11 +1,32 @@
 #include "server.h"
 #include "routes.h"
 #include "http.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>
 #include <unistd.h>
+#include <limits.h>
 
 HttpServer *http_server = NULL;
+
+void sendResponse(Response *response, char *content) {
+
+  printf("%s\n", content);
+
+  char buffer[8192];
+
+  int length = snprintf(buffer, 8192,
+    "HTTP/1.1 200 OK\r\n"
+    "Content-Type: text/plain\r\n"
+    "Content-Length: %ld\r\n"
+    "\r\n"
+    "%s\r\n", strlen(content), content);
+
+  printf("%*.s\n", length, buffer);
+
+  write_socket(response->client_socket_fd, buffer, length);
+}
 
 void handle_request(void **args) {
 
@@ -15,8 +36,20 @@ void handle_request(void **args) {
   char *data = content + sizeof(int);
   char *request_str = strndup(data, n_bytes);
 
-  initialize_request(request_str);
+  Request *request = initialize_request(request_str);
+  Response *response = initialize_response(sendResponse, *client_socket_fd);
+  Route *route = get_route(http_server->router, request->path, request->method);
 
+  if (route == NULL) {
+    //send bad request
+    printf("Bad Request\n");
+  }else {
+    printf("Handler\n");
+    route->handler(request, response);
+  }
+
+  printf("Free and close\n");
+  close(*client_socket_fd);
   free(request_str);
   free(content);
   free(client_socket_fd);

@@ -1,5 +1,6 @@
 #include "sockets.h"
 #include "../errors/errors.h"
+#include <asm-generic/errno.h>
 
 int tcp_socket_server_init(int port) {
 
@@ -74,6 +75,11 @@ void *read_socket(int socket_fd, size_t buffer_size) {
     return NULL;
   }
 
+  struct timeval timeout;
+  timeout.tv_sec = 1;
+  timeout.tv_usec = 0;
+  setsockopt(socket_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+
   int *total_bytes_read = (int *) buffer;
   *total_bytes_read = 0;
   int bytes_read;
@@ -99,11 +105,11 @@ void *read_socket(int socket_fd, size_t buffer_size) {
 
   }
 
-  if (bytes_read < 0) {
+  /*if (bytes_read < 0) {
     throw_system_error(CRITICAL, "It was not possible read from the socket");
     free(buffer);
     return NULL;
-  }
+  }*/
 
   return buffer;
 }

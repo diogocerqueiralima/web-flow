@@ -25,5 +25,6 @@
   Router *initialize_router(int capacity);
   int destroy_router(Router *router);
   int register_route(Router *router, char *path, HttpMethod method, void (*handler)(Request *, Response *));
+  Route *get_route(Router *router, char *path, HttpMethod method);
 
 #endif

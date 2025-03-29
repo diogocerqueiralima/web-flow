@@ -34,12 +34,16 @@
 
   } Request;
 
-  typedef struct {
+  typedef struct Response {
+    
+    void (*send)(struct Response *response, char *content);
+    int client_socket_fd;
 
   } Response;
 
   HttpMethod get_http_method(char *method_str);
   char *get_http_method_str(HttpMethod method);
   Request *initialize_request(char *request_str);
+  Response *initialize_response(void (*send)(Response *response, char *content), int client_socket_fd);
 
 #endif

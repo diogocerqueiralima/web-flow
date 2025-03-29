@@ -1,4 +1,5 @@
 #include "http.h"
+#include <stdlib.h>
 #include <string.h>
 
 HttpMethod get_http_method(char *method_str) {
@@ -117,4 +118,18 @@ Request *initialize_request(char *request_str) {
   char *body = strtok_r(NULL, CRLF, &line_ptr);
 
   return request;
+}
+
+Response *initialize_response(void (*send)(Response *response, char *content), int client_socket_fd) {
+
+  Response *response = malloc(sizeof(Response));
+
+  if (response == NULL) {
+    throw_system_error(CRITICAL, "It was not possible initialize the Response");
+    return NULL;
+  }
+
+  response->send = send;
+  response->client_socket_fd = client_socket_fd;
+  return response;
 }

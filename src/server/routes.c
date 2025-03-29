@@ -1,4 +1,5 @@
 #include "routes.h"
+#include "http.h"
 #include <string.h>
 
 Router *initialize_router(int capacity) {
@@ -74,5 +75,20 @@ int register_route(Router *router, char *path, HttpMethod method, void (*handler
   }
 
   router->routes[router->size++] = route;
+
   return 0;
+}
+
+Route *get_route(Router *router, char *path, HttpMethod method) {
+
+  for (int i = 0; i < router->size; i++) {
+
+    Route *route = router->routes[i];
+
+    if (strcmp(route->path, path) == 0 && route->method == method)
+      return route;
+
+  }
+
+  return NULL;
 }
