@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <limits.h>
+#include <fcntl.h>
 
 HttpServer *http_server = NULL;
 
@@ -61,6 +62,21 @@ void handle_client() {
   ThreadPool *thread_pool = http_server->thread_pool;
 
   int client_socket_fd = tcp_socket_server_accept(http_server->socket_fd);
+
+  int flags = fcntl(client_socket_fd, F_GETFL, 0);
+
+  if (flags == -1) {
+    close(client_socket_fd);
+    throw_system_error(CRITICAL, "It was not possible communicate with the client");
+    return;
+  }
+
+  if (fcntl(client_socket_fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+    close(client_socket_fd);
+    throw_system_error(CRITICAL, "It was not possible communicate with the client");
+    return;
+  }
+
   int *arg0 = malloc(sizeof(int));
 
   if (arg0 == NULL) {

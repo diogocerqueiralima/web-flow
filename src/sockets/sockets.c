@@ -75,11 +75,6 @@ void *read_socket(int socket_fd, size_t buffer_size) {
     return NULL;
   }
 
-  struct timeval timeout;
-  timeout.tv_sec = 1;
-  timeout.tv_usec = 0;
-  setsockopt(socket_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
-
   int *total_bytes_read = (int *) buffer;
   *total_bytes_read = 0;
   int bytes_read;
