@@ -22,6 +22,13 @@
 
   } HttpMethod;
 
+  typedef enum {
+
+    TEXT_PLAIN,
+    APPLICATION_JSON
+
+  } ContentType;
+
   typedef struct {
 
     char *path;
@@ -36,6 +43,7 @@
 
   typedef struct Response {
     
+    ContentType content_type;
     void (*send)(struct Response *response, char *content);
     int client_socket_fd;
 
@@ -43,7 +51,10 @@
 
   HttpMethod get_http_method(char *method_str);
   char *get_http_method_str(HttpMethod method);
+  char *get_content_type_str(ContentType content_type);
   Request *initialize_request(char *request_str);
   Response *initialize_response(void (*send)(Response *response, char *content), int client_socket_fd);
+  void destroy_request(Request *request);
+  void destroy_response(Response *response);
 
 #endif

@@ -6,6 +6,7 @@
 #define PORT 8080
 
 void helloHandler(Request *request, Response *response) {
+  response->content_type = APPLICATION_JSON;
   response->send(response, "Hello World!");
 }
 

@@ -13,20 +13,20 @@ HttpServer *http_server = NULL;
 
 void sendResponse(Response *response, char *content) {
 
-  printf("%s\n", content);
+  char *content_type_str = get_content_type_str(response->content_type);
+    char buffer[8192];
 
-  char buffer[8192];
+    int content_length = strlen(content);
 
-  int length = snprintf(buffer, 8192,
-    "HTTP/1.1 200 OK\r\n"
-    "Content-Type: text/plain\r\n"
-    "Content-Length: %ld\r\n"
-    "\r\n"
-    "%s\r\n", strlen(content), content);
+    int length = snprintf(buffer, sizeof(buffer),
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: %s\r\n"
+        "Content-Length: %d\r\n"
+        "\r\n"
+        "%s",
+        content_type_str, content_length, content);
 
-  printf("%*.s\n", length, buffer);
-
-  write_socket(response->client_socket_fd, buffer, length);
+    write_socket(response->client_socket_fd, buffer, length);
 }
 
 void handle_request(void **args) {
@@ -42,14 +42,14 @@ void handle_request(void **args) {
   Route *route = get_route(http_server->router, request->path, request->method);
 
   if (route == NULL) {
-    //send bad request
-    printf("Bad Request\n");
+    //send not found
+    printf("Not Found\n");
   }else {
-    printf("Handler\n");
     route->handler(request, response);
   }
 
-  printf("Free and close\n");
+  destroy_request(request);
+  destroy_response(response);
   close(*client_socket_fd);
   free(request_str);
   free(content);

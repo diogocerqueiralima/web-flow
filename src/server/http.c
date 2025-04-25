@@ -34,25 +34,17 @@ char *get_http_method_str(HttpMethod method) {
   
 }
 
-void print_characters(const char *str) {
-    while (*str) {
-        if (*str == '\r') {
-            printf("\\r");
-        } else if (*str == '\n') {
-            printf("\\n");
-        } else if (*str == '\t') {
-            printf("\\t");
-        } else {
-            printf("%c", *str);
-        }
-        str++;
-    }
-    printf("\n");
+char *get_content_type_str(ContentType content_type) {
+
+  switch (content_type) {
+    case TEXT_PLAIN: return "text/plain";
+    case APPLICATION_JSON: return "application/json";
+    default: return "text/plain";
+  }
+
 }
 
 Request *initialize_request(char *request_str) {
-
-  printf("%s\n", request_str);
 
   Request *request = malloc(sizeof(Request));
 
@@ -129,7 +121,21 @@ Response *initialize_response(void (*send)(Response *response, char *content), i
     return NULL;
   }
 
+  response->content_type = TEXT_PLAIN;
   response->send = send;
   response->client_socket_fd = client_socket_fd;
   return response;
+}
+
+void destroy_request(Request *request) {
+
+  destroy_hash_table(request->headers);
+  free(request);
+
+}
+
+void destroy_response(Response *response) {
+
+  free(response);
+
 }
